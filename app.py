@@ -18,7 +18,7 @@ load_dotenv()
 # client = OpenAI(api_key=key)
 
 # Set up the Streamlit app
-st.header("DocSnap - Medical Report Text Extraction")
+st.header("Medical Report")
 
 # File uploader for image input
 uploaded_file = st.sidebar.file_uploader("Choose a medical report image", type=["png", "jpg", "jpeg"])
@@ -40,6 +40,7 @@ if uploaded_file is not None:
     
     # Display the extracted text
     st.subheader("DocSnap of Your Report")
+    # st.text(extracted_text)
     
 # Granite is taking control of the extracted data
 
@@ -77,7 +78,7 @@ if uploaded_file is not None:
     headers = {
         "Accept": "application/json",
         "Content-Type": "application/json",
-        "Authorization": "Bearer YOUR_ACCESS_TOKEN"
+        "Authorization": "Bearer dwbAogDncmEZ4yj4CswW2m3UmfmVwtnnqPrswPPBS9ZNcVUKbQ5uGG5dtB8JfS6r0L3CK0IOx2kvAH4RNo2Wf+kfmTw5UTdTgQ"
     }
 
     response = requests.post(
@@ -86,6 +87,7 @@ if uploaded_file is not None:
         json=body
     )
 
+    print(response)
     if response.status_code != 200:
         raise Exception("Non-200 response: " + str(response.text))
 
