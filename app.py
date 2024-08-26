@@ -6,48 +6,39 @@ import pytesseract
 import openai
 from openai import OpenAI
 import requests
+import time
+import streamlit_scrollable_textbox as stx
+import json
 
 pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 
 # Load environment variables
 load_dotenv()
 
-# OpenAI API key
 # key = os.getenv("OPEN_API_KEY")
-
 # client = OpenAI(api_key=key)
-
-# Set up the Streamlit app
-st.header("Medical Report")
-
-# File uploader for image input
-uploaded_file = st.sidebar.file_uploader("Choose a medical report image", type=["png", "jpg", "jpeg"])
 
 # Function to extract text from image
 def extract_text_from_image(image):
-    return pytesseract.image_to_string(image)
+    extracted = pytesseract.image_to_string(image)
+    cleaned_text = extracted.replace('©', '')
+    return cleaned_text
 
-# If an image is uploaded
-if uploaded_file is not None:
-    # Open the uploaded image
-    image = Image.open(uploaded_file)
-    
-    # Display the image in the app
-    st.image(image, caption="Uploaded Medical Report", use_column_width=True)
-    
-    # Extract text from the image using OCR
-    extracted_text = extract_text_from_image(image)
-    
-    # Display the extracted text
-    st.subheader("DocSnap of Your Report")
-    # st.text(extracted_text)
-    
-# Granite is taking control of the extracted data
 
+
+def granite_summarization(extracted_text):
+    
+
+   
     url = "https://us-south.ml.cloud.ibm.com/ml/v1/text/generation?version=2023-05-29"
     
     body = {
-        "input": f"Summarize the following medical report in a concise manner, focusing on the patient's chief complaint, history of present illness, key examination findings, lab results, diagnosis, treatment plan, and any important patient education points. Ensure the summary is clear and easy to understand for both medical professionals and patients.\n\n{extracted_text}\n\nOutput:",
+        "input": f"""I have a text-based medical report. Please summarize the key information, including patient details, diagnosis, prescribed medications, and any recommendations. 
+        Focus on extracting and condensing the most important medical information while maintaining accuracy and clarity in a paragraph.
+       
+        {extracted_text}   
+        
+        Output:""",
         "parameters": {
             "decoding_method": "greedy",
             "max_new_tokens": 200,
@@ -74,11 +65,15 @@ if uploaded_file is not None:
             }
         }
     }
+    
+   
+    
+    access_token = os.getenv("ACCESS_TOKEN")
 
     headers = {
         "Accept": "application/json",
         "Content-Type": "application/json",
-        "Authorization": "Bearer dwbAogDncmEZ4yj4CswW2m3UmfmVwtnnqPrswPPBS9ZNcVUKbQ5uGG5dtB8JfS6r0L3CK0IOx2kvAH4RNo2Wf+kfmTw5UTdTgQ"
+        "Authorization": f"Bearer {access_token}"
     }
 
     response = requests.post(
@@ -93,10 +88,37 @@ if uploaded_file is not None:
 
     data = response.json()
     
-    # Display the summarized output
-    st.subheader("Summary of Your Report")
-    st.text(data.get("output", "No summary available"))
+    print(data)
+    
+    generated_text = data['results'][0]['generated_text']
+    
+    if generated_text:
+        stx.scrollableTextbox(generated_text)
+    else:
+        st.text(data.get("output", "No summary available"))
+
+    
+
+# Set up the Streamlit app
+st.header("Medical Report")
+
+# File uploader for image input
+uploaded_file = st.sidebar.file_uploader("Choose a medical report image", type=["png", "jpg", "jpeg"])
+
+# If an image is uploaded
+if uploaded_file is not None:
+    # Open the uploaded image
+    image = Image.open(uploaded_file)
+    
+    # Display the image in the app
+    st.image(image, caption="Uploaded Medical Report", use_column_width=True)
+    
+    # Extract text from the image using OCR
+    extracted_text = extract_text_from_image(image)
+    
     
     
 
-
+    # Display the extracted text
+    st.subheader("DocSnap of Your Report")
+    granite_summarization(extracted_text)
