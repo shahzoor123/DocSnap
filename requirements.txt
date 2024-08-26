@@ -1,5 +1,8 @@
-google-generativeai
 streamlit
 python-dotenv
-langchain
-plotly
+Pillow
+pytesseract
+openai
+requests
+streamlit-scrollable-textbox
+
