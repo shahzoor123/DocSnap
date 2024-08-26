@@ -93,10 +93,17 @@ def granite_summarization(extracted_text):
     generated_text = data['results'][0]['generated_text']
     
     if generated_text:
-        stx.scrollableTextbox(generated_text)
+        st.text_area("Summary",generated_text)
     else:
         st.text(data.get("output", "No summary available"))
 
+
+# Load the logo image
+logo1 = Image.open("icons/pulse.png")
+
+# Display the logo image
+st.image(logo1, use_column_width=False, width=60)  # Adjust width as needed
+st.sidebar.title("DocSnap")
     
 
 # Set up the Streamlit app
